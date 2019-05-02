@@ -2,15 +2,17 @@
 from scipy.spatial import distance as ds
 from imutils import face_utils
 from playsound import playsound
+import pygame
 import cv2 as cv
 import numpy as np
 import time
 import dlib
 
-
+pygame.mixer.init()
+pygame.mixer.music.load('alarm.wav')
 # If the eye aspect ratio falls below this threshold
 #start the counter for the frames
-EYE_AR_THRESHOLD = 0.3
+EYE_AR_THRESHOLD = 0.2
 
 #If th eyes are closed for 48 frame, play the alarm.
 EYE_AR_CONSECUTIVE_FRAMES = 48
@@ -46,8 +48,8 @@ while True:
 
 	face_rectangle = face_cascade.detectMultiScale(gray, 1.5, 5)
 
-	for (x, y, w, h) in face_rectangle:
-		cv.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 2)
+	# for (x, y, w, h) in face_rectangle:
+	# 	cv.rectangle(frame, (x,y), (x+w, y+h), (255, 0, 0), 2)
 
 	for face in faces:
 
@@ -72,14 +74,15 @@ while True:
 		if(eyeAspectRatio < EYE_AR_THRESHOLD):
 			COUNTER += 1
 			if COUNTER >= EYE_AR_CONSECUTIVE_FRAMES:
-				if not Alarm:
-					Alarm = True
-					playsound('alarm.wav')
+				pygame.mixer.music.play(-1)
 				cv.putText(frame, 'DROWSINESS ALERT!', (10, 30),
 				 cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 		else:
 			COUNTER = 0
-			Alarm = False
+			pygame.mixer.music.stop()
+
+		cv.putText(frame, "EAR: {:.2f}".format(eyeAspectRatio), (300, 30), 
+			cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
 	cv.imshow('Video', frame)
 	if(cv.waitKey(1) & 0xFF == ord('1')):
